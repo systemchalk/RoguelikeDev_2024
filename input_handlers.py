@@ -9,21 +9,16 @@ class EventHandler(tcod.event.EventDispatch[Action]):
         raise SystemExit()
     
     def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[Action]:
-        action: Optional[Action] = None
-
-        key = event.sym
-
-        if key == tcod.event.KeySym.UP:
-            action = MovementAction(dx=0, dy=-1)
-        elif key == tcod.event.KeySym.DOWN:
-            action = MovementAction(dx=0, dy=1)
-        elif key == tcod.event.KeySym.LEFT:
-            action = MovementAction(dx=-1, dy=0)
-        elif key == tcod.event.KeySym.RIGHT:
-            action = MovementAction(dx=1, dy=0)
-
-        elif key == tcod.event.KeySym.ESCAPE:
-            action = EscapeAction()
-
-        # No valid key was pressed
-        return action
+        match event.sym:
+            case tcod.event.KeySym.UP:
+                return MovementAction(dx=0, dy=-1)
+            case tcod.event.KeySym.DOWN:
+                return MovementAction(dx=0, dy=1)
+            case tcod.event.KeySym.LEFT:
+                return MovementAction(dx=-1, dy=0)
+            case tcod.event.KeySym.RIGHT:
+                return MovementAction(dx=1, dy=0)
+            case tcod.event.KeySym.ESCAPE:
+                return EscapeAction()
+            case _:
+                return None
