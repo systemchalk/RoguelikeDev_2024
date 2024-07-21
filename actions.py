@@ -1,4 +1,3 @@
-# TODO: is annotations still future?
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

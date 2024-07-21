@@ -16,7 +16,6 @@ class Engine:
 
     def handle_events(self, events: Iterable[Any]) -> None:
         for event in events:
-            # TODO: Why can't I use a switch on this?
             action = self.event_handler.dispatch(event)
 
             if action is None:
