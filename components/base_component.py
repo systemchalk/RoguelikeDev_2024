@@ -6,8 +6,9 @@ if TYPE_CHECKING:
     from engine import Engine
     from entity import Entity
 
+
 class BaseComponent:
-    entity: Entity # Owning entity instance.
+    entity: Entity  # Owning entity instance.
 
     @property
     def engine(self) -> Engine:

@@ -12,6 +12,7 @@ if TYPE_CHECKING:
 
 T = TypeVar("T", bound="Entity")
 
+
 class Entity:
     """
     A generic object to represent players, enemies, items, etc.
@@ -30,8 +31,8 @@ class Entity:
         blocks_movement: bool = False,
         render_order: RenderOrder = RenderOrder.CORPSE,
     ):
-        self.x = x, 
-        self.y = y, 
+        self.x = x,
+        self.y = y,
         self.char = char
         self.color = color
         self.name = name
@@ -56,7 +57,7 @@ class Entity:
         self.x = x
         self.y = y
         if gamemap:
-            if hasattr(self, "gamemap"): # Possibly uninitialized.
+            if hasattr(self, "gamemap"):  # Possibly uninitialized.
                 self.gamemap.entities.remove(self)
             self.gamemap = gamemap
             gamemap.entities.add(self)
@@ -65,6 +66,7 @@ class Entity:
         # Move the entity by a given amount
         self.x += dx
         self.y += dy
+
 
 class Actor(Entity):
     def __init__(
