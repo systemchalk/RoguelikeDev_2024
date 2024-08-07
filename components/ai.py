@@ -70,7 +70,6 @@ class ConfusedEnemy(BaseAI):
                 f"The {self.entity.name} is no longer confused."
             )
             self.entity.ai = self.previous_ai
-            return self.entity.ai.perform()
         else:
             # Pick a random direction
             direction_x, direction_y = random.choice(
@@ -88,9 +87,9 @@ class ConfusedEnemy(BaseAI):
 
             self.turns_remaining -= 1
 
-        # The actor will try to move or attack in the chosen random direction.
-        # It is possible the actor will just bump into the wall, wasting a turn.
-        return BumpAction(self.entity, direction_x, direction_y,).perform()
+            # The actor will try to move or attack in the chosen random direction.
+            # It is possible the actor will just bump into the wall, wasting a turn.
+            return BumpAction(self.entity, direction_x, direction_y,).perform()
 
 
 class HostileEnemy(BaseAI):
