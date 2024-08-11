@@ -16,12 +16,12 @@ def save_game(handler: input_handlers.BaseEventHandler, filename: str) -> None:
         print("Game saved.")
 
 
-def main():
+def main() -> None:
     screen_width = 80
     screen_height = 50
 
     tileset = tcod.tileset.load_tilesheet(
-        "dejavu10x10_gs_tc.png", 32, 8, tcod.tileset.CHARMAP_TCOD
+        "dejavu10x10_gs_tc.png", 32, 8, tcod.tileset.CHARMAP_TCOD,
     )
 
     handler: input_handlers.BaseEventHandler = setup_game.MainMenu()
@@ -50,7 +50,7 @@ def main():
                     # Then print the error to the message log.
                     if isinstance(handler, input_handlers.EventHandler):
                         handler.engine.message_log.add_message(
-                            traceback.format_exc(), color.error
+                            traceback.format_exc(), color.error,
                         )
         except exceptions.QuitWithoutSaving:
             raise

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import copy
 import math
-from typing import Optional, Tuple, Type, TypeVar, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, TypeVar
 
 from render_order import RenderOrder
 
@@ -17,25 +17,30 @@ T = TypeVar("T", bound="Entity")
 
 
 class Entity:
-    """
-    A generic object to represent players, enemies, items, etc.
-    """
+    """A generic object to represent players, enemies, items, etc."""
 
-    parent: Union[GameMap, Inventory]
+    parent: GameMap | Inventory
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
-        parent: Optional[GameMap] = None,
+        parent: GameMap | None = None,
         x: int = 0,
         y: int = 0,
         char: str = "?",
-        color: Tuple[int, int, int] = (255, 255, 255),
+        color: tuple[int, int, int] = (255, 255, 255),
         name: str = "<Unnamed>",
+        *,
         blocks_movement: bool = False,
         render_order: RenderOrder = RenderOrder.CORPSE,
-    ):
-        self.x = x,
-        self.y = y,
+    ) -> None:
+        """Initialize an Entity.
+
+        Initalize an Entity with an optional parent, x and y coordinate,
+        character representation, colour, name, blocks movement flag, and
+        render order.
+        """
+        self.x = x
+        self.y = y
         self.char = char
         self.color = color
         self.name = name
@@ -59,20 +64,25 @@ class Entity:
         gamemap.entities.add(clone)
         return clone
 
-    def place(self, x: int, y: int, gamemap: Optional[GameMap] = None) -> None:
-        """Place this entity at a new location. Handles moving across GameMaps."""
+    def place(self, x: int, y: int, gamemap: GameMap | None = None) -> None:
+        """Place this entity at a new location.
+
+        Handles moving across GameMaps.
+        """
         self.x = x
         self.y = y
         if gamemap:
-            if hasattr(self, "parent"):  # Possibly uninitialized.
-                if self.parent is self.gamemap:
-                    self.gamemap.entities.remove(self)
+            # Possibly uninitialized.
+            if hasattr(self, "parent") and self.parent is self.gamemap:
+                self.gamemap.entities.remove(self)
             self.parent = gamemap
             gamemap.entities.add(self)
 
     def distance(self, x: int, y: int) -> float:
-        """
-        Return the distance between the current entity and the given (x, y) coordinate.
+        """Return the distance from the entity.
+
+        Return the distance between the current entity and the given (x, y)
+        coordinate.
         """
         return math.sqrt((x - self.x) ** 2 + (y - self.y) ** 2)
 
@@ -83,18 +93,24 @@ class Entity:
 
 
 class Actor(Entity):
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         *,
         x: int = 0,
         y: int = 0,
         char: str = "?",
-        color: Tuple[int, int, int] = (255, 255, 255),
+        color: tuple[int, int, int] = (255, 255, 255),
         name: str = "<Unnamed>",
-        ai_cls: Type[BaseAI],
+        ai_cls: type[BaseAI],
         fighter: Fighter,
         inventory: Inventory,
-    ):
+    ) -> None:
+        """Initialize an Actor.
+
+        Initializes an actor with x and y coordinates,
+        character representation, colour, name, optional ai, fighter component
+        and inventory. Ensures it can block and is rendered as an actor.
+        """
         super().__init__(
             x=x,
             y=y,
@@ -105,7 +121,7 @@ class Actor(Entity):
             render_order=RenderOrder.ACTOR,
         )
 
-        self.ai: Optional[BaseAI] = ai_cls(self)
+        self.ai: BaseAI | None = ai_cls(self)
 
         self.fighter = fighter
         self.fighter.parent = self
@@ -120,16 +136,22 @@ class Actor(Entity):
 
 
 class Item(Entity):
-    def __init__(
+    def __init__(  # noqa: PLR0913
             self,
             *,
             x: int = 0,
             y: int = 0,
             char: str = "?",
-            color: Tuple[int, int, int] = (255, 255, 255),
+            color: tuple[int, int, int] = (255, 255, 255),
             name: str = "<Unnamed>",
             consumable: Consumable,
-    ):
+    ) -> None:
+        """Initialize an item.
+
+        Initialize an item with x and y coordinates, character representation,
+        colour, name, and consumable. Ensures it cannot block the player and is
+        rendered with the items.
+        """
         super().__init__(
             x=x,
             y=y,

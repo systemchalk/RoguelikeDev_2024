@@ -5,15 +5,15 @@ import copy
 import lzma
 import pickle
 import traceback
-from typing import Optional
+from pathlib import Path
 
 import tcod
 from tcod import libtcodpy
 
 import color
-from engine import Engine
 import entity_factories
 import input_handlers
+from engine import Engine
 from procgen import generate_dungeon
 
 # Load the background image and remove the alpha chanel.
@@ -49,14 +49,15 @@ def new_game() -> Engine:
     engine.update_fov()
 
     engine.message_log.add_message(
-        "Hello and welcome, adventurer, to yet another dungeon!", color.welcome_text
+        "Hello and welcome, adventurer, to yet another dungeon!",
+        color.welcome_text,
     )
     return engine
 
 
 def load_game(filename: str) -> Engine:
     """Load an Engine instance from a file."""
-    with open(filename, "rb") as f:
+    with Path(filename).open("rb") as f:
         engine = pickle.loads(lzma.decompress(f.read()))
     assert isinstance(engine, Engine)
     return engine
@@ -86,7 +87,7 @@ class MainMenu(input_handlers.BaseEventHandler):
 
         menu_width = 24
         for i, text in enumerate(
-            ["[N] Play a new game", "[C] Continue last game", "[Q] Quit"]
+            ["[N] Play a new game", "[C] Continue last game", "[Q] Quit"],
         ):
             console.print(
                 console.width // 2,
@@ -99,18 +100,23 @@ class MainMenu(input_handlers.BaseEventHandler):
             )
 
     def ev_keydown(
-            self, event: tcod.event.KeyDown
-    ) -> Optional[input_handlers.BaseEventHandler]:
+            self, event: tcod.event.KeyDown,
+    ) -> input_handlers.BaseEventHandler | None:
         if event.sym in (tcod.event.KeySym.q, tcod.event.KeySym.ESCAPE):
-            raise SystemExit()
-        elif event.sym == tcod.event.KeySym.c:
+            raise SystemExit
+        if event.sym == tcod.event.KeySym.c:
             try:
-                return input_handlers.MainGameEventHandler(load_game("savegame.sav"))
+                return input_handlers.MainGameEventHandler(
+                    load_game("savegame.sav"),
+                )
             except FileNotFoundError:
-                return input_handlers.PopupMessage(self, "No saved game to load.")
+                return input_handlers.PopupMessage(self,
+                                                   "No saved game to load.")
             except Exception as exc:
                 traceback.print_exc()  # Print to stderr.
-                return input_handlers.PopupMessage(self, f"Failed to load save:\n{exc}")
+                return input_handlers.PopupMessage(self,
+                                                   f"Failed to load save:\n{
+                                                       exc}")
         elif event.sym == tcod.event.KeySym.n:
             return input_handlers.MainGameEventHandler(new_game())
 

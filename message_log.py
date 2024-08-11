@@ -1,13 +1,17 @@
-from typing import Iterable, List, Reversible, Tuple
-import textwrap
+from __future__ import annotations
 
-import tcod
+import textwrap
+from typing import TYPE_CHECKING, Iterable, Reversible
 
 import color
 
+if TYPE_CHECKING:
+    import tcod
+
 
 class Message:
-    def __init__(self, text: str, fg: Tuple[int, int, int]):
+    def __init__(self, text: str, fg: tuple[int, int, int]) -> None:
+        """Intialize a message with text, a foreground colour, and count=1."""
         self.plain_text = text
         self.fg = fg
         self.count = 1
@@ -22,12 +26,15 @@ class Message:
 
 class MessageLog:
     def __init__(self) -> None:
-        self.messages: List[Message] = []
+        """Prepare a MessageLog with an empty list of messages."""
+        self.messages: list[Message] = []
 
     def add_message(
-        self, text: str, fg: Tuple[int, int, int] = color.white, *, stack: bool = True,
+        self, text: str, fg: tuple[int, int, int] = color.white, *,
+        stack: bool = True,
     ) -> None:
         """Add a message to this log.
+
         'text' is the message text, 'fg' is the text color.
         If 'stack' is True then the message can stack with a previous message
         of the same text.
@@ -38,9 +45,11 @@ class MessageLog:
             self.messages.append(Message(text, fg))
 
     def render(
-        self, console: tcod.console.Console, x: int, y: int, width: int, height: int,
+        self, console: tcod.console.Console, x: int, y: int, width: int,
+        height: int,
     ) -> None:
         """Render this log over the given area.
+
         'x', 'y', 'width', 'height' is the rectangular region to render onto
         the 'console'.
         """
@@ -55,7 +64,7 @@ class MessageLog:
             )
 
     @classmethod
-    def render_messages(
+    def render_messages(  # noqa: PLR0913
         cls,
         console: tcod.console.Console,
         x: int,

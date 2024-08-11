@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import contextlib
 import lzma
 import pickle
+from pathlib import Path
 from typing import TYPE_CHECKING
 
-from tcod.console import Console
 from tcod.map import compute_fov
 
 import exceptions
@@ -12,6 +13,8 @@ from message_log import MessageLog
 from render_functions import render_bar, render_names_at_mouse_location
 
 if TYPE_CHECKING:
+    from tcod.console import Console
+
     from entity import Actor
     from game_map import GameMap
 
@@ -19,7 +22,12 @@ if TYPE_CHECKING:
 class Engine:
     game_map: GameMap
 
-    def __init__(self, player: Actor):
+    def __init__(self, player: Actor) -> None:
+        """Intialize a GameMap.
+
+        Initalize a GameMap with an empty message log, initial (0,0) mouse
+        location, and player.
+        """
         self.message_log = MessageLog()
         self.mouse_location = (0, 0)
         self.player = player
@@ -27,10 +35,9 @@ class Engine:
     def handle_enemy_turns(self) -> None:
         for entity in set(self.game_map.actors) - {self.player}:
             if entity.ai:
-                try:
+                with contextlib.suppress(exceptions.Impossible):
+                    # Ignore impossible action exceptions from AI.
                     entity.ai.perform()
-                except exceptions.Impossible:
-                    pass  # Ignore impossible action exceptions from AI.
 
     def update_fov(self) -> None:
         """Recompute the visible area based on the player's point of view."""
@@ -61,5 +68,5 @@ class Engine:
     def save_as(self, filename: str) -> None:
         """Save this Engine instance as a compressed file."""
         save_data = lzma.compress(pickle.dumps(self))
-        with open(filename, "wb") as f:
+        with Path(filename).open("wb") as f:
             f.write(save_data)

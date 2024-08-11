@@ -1,4 +1,4 @@
-class Impossible(Exception):
+class Impossible(Exception):  # noqa: N818
     """Exception raised when an action is impossible to be performed.
 
     The reason is given as the exception message

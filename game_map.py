@@ -1,22 +1,29 @@
 from __future__ import annotations
 
-from typing import Iterable, Iterator, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Iterable, Iterator
 
 import numpy as np  # type: ignore
-from tcod.console import Console
 
-from entity import Actor, Item
 import tile_types
+from entity import Actor, Item
 
 if TYPE_CHECKING:
+    from tcod.console import Console
+
     from engine import Engine
     from entity import Entity
 
 
 class GameMap:
     def __init__(
-        self, engine: Engine, width: int, height: int, entities: Iterable[Entity] = ()
-    ):
+        self, engine: Engine, width: int, height: int,
+        entities: Iterable[Entity] = (),
+    ) -> None:
+        """Prepare a game map.
+
+        Initialize a game map with an engine, width, height, a set of
+        entities, and arrays of tiles, visible tiles, and explored tiles.
+        """
         self.engine = engine
         self.width, self.height = width, height
         self.entities = set(entities)
@@ -24,10 +31,10 @@ class GameMap:
             (width, height), fill_value=tile_types.wall, order="F")
 
         self.visible = np.full(
-            (width, height), fill_value=False, order="F"
+            (width, height), fill_value=False, order="F",
         )  # Tiles the player can currently see
         self.explored = np.full(
-            (width, height), fill_value=False, order="F"
+            (width, height), fill_value=False, order="F",
         )  # Tiles the player has seen before
 
     @property
@@ -45,11 +52,15 @@ class GameMap:
 
     @property
     def items(self) -> Iterator[Item]:
-        yield from (entity for entity in self.entities if isinstance(entity, Item))
+        yield from (entity
+                    for entity
+                    in self.entities
+                    if isinstance(entity, Item)
+                    )
 
     def get_blocking_entity_at_location(
-        self, location_x: int, location_y: int
-    ) -> Optional[Entity]:
+        self, location_x: int, location_y: int,
+    ) -> Entity | None:
         for entity in self.entities:
             if (
                 entity.blocks_movement
@@ -60,7 +71,7 @@ class GameMap:
 
         return None
 
-    def get_actor_at_location(self, x: int, y: int) -> Optional[Actor]:
+    def get_actor_at_location(self, x: int, y: int) -> Actor | None:
         for actor in self.actors:
             if actor.x == x and actor.y == y:
                 return actor
@@ -72,12 +83,11 @@ class GameMap:
         return 0 <= x < self.width and 0 <= y < self.height
 
     def render(self, console: Console) -> None:
-        """
-        Renders the map.
+        """Render the map.
 
-        If a tile is in the "visible" array, then draw it with the "light" colours.
-        If it isn't, but it's in the "explored" array, then draw it with the "dark" colours.
-        Otherwise, the default is "SHROUD".
+        If a tile is in the "visible" array, then draw it with the "light"
+        colours. If it isn't, but it's in the "explored" array, then draw it
+        with the "dark" colours. Otherwise, the default is "SHROUD".
         """
         console.rgb[0: self.width, 0: self.height] = np.select(
             condlist=[self.visible, self.explored],
@@ -86,12 +96,13 @@ class GameMap:
         )
 
         entities_sorted_for_rendering = sorted(
-            self.entities, key=lambda x: x.render_order.value
+            self.entities, key=lambda x: x.render_order.value,
         )
 
         for entity in entities_sorted_for_rendering:
             # Only print entities that are in the FOV
             if self.visible[entity.x, entity.y]:
                 console.print(
-                    x=entity.x, y=entity.y, string=entity.char, fg=entity.color
+                    x=entity.x, y=entity.y, string=entity.char,
+                    fg=entity.color,
                 )

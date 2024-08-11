@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from components.base_component import BaseComponent
 
@@ -11,13 +11,16 @@ if TYPE_CHECKING:
 class Inventory(BaseComponent):
     parent: Actor
 
-    def __init__(self, capacity: int):
+    def __init__(self, capacity: int) -> None:
+        """Initialize an inventory with capacity and an empty list of items."""
         self.capacity = capacity
-        self.items: List[Item] = []
+        self.items: list[Item] = []
 
     def drop(self, item: Item) -> None:
-        """
-        Removes an item from the inventory and restores it to the game map, at the player's current location.
+        """Drop an item to the game map.
+
+        Remove an item from the inventory and restore it to the game map, at
+        the player's current location.
         """
         self.items.remove(item)
         item.place(self.parent.x, self.parent.y, self.gamemap)
