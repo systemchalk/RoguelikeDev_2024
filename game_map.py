@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Iterable, Iterator
 
-import numpy as np  # type: ignore
+import numpy as np
 
 import tile_types
 from entity import Actor, Item
@@ -22,7 +22,8 @@ class GameMap:
         """Prepare a game map.
 
         Initialize a game map with an engine, width, height, a set of
-        entities, and arrays of tiles, visible tiles, and explored tiles.
+        entities, and arrays of tiles, visible tiles, explored tiles, and a
+        downstairs location.
         """
         self.engine = engine
         self.width, self.height = width, height
@@ -36,6 +37,7 @@ class GameMap:
         self.explored = np.full(
             (width, height), fill_value=False, order="F",
         )  # Tiles the player has seen before
+        self.downstairs_location = (0, 0)
 
     @property
     def gamemap(self) -> GameMap:
@@ -106,3 +108,53 @@ class GameMap:
                     x=entity.x, y=entity.y, string=entity.char,
                     fg=entity.color,
                 )
+
+
+class GameWorld:
+    """Holds GameMap settings and generates new maps when moving downstairs."""
+
+    def __init__(  # noqa: PLR0913
+            self,
+            *,
+            engine: Engine,
+            map_width: int,
+            map_height: int,
+            max_rooms: int,
+            room_min_size: int,
+            room_max_size: int,
+            max_monsters_per_room: int,
+            max_items_per_room: int,
+            current_floor: int = 0,
+    ) -> None:
+        """Prepare a game world with GameMap defaults."""
+        self.engine = engine
+
+        self.map_width = map_width
+        self.map_height = map_height
+
+        self.max_rooms = max_rooms
+
+        self.room_min_size = room_min_size
+        self.room_max_size = room_max_size
+
+        self.max_monsters_per_room = max_monsters_per_room
+        self.max_items_per_room = max_items_per_room
+
+        self.current_floor = current_floor
+
+    def generate_floor(self) -> None:
+        """Generate a new dungeon floor."""
+        from procgen import generate_dungeon
+
+        self.current_floor += 1
+
+        self.engine.game_map = generate_dungeon(
+            max_rooms=self.max_rooms,
+            room_min_size=self.room_min_size,
+            room_max_size=self.room_max_size,
+            map_width=self.map_width,
+            map_height=self.map_height,
+            max_monsters_per_room=self.max_monsters_per_room,
+            max_items_per_room=self.max_items_per_room,
+            engine=self.engine,
+        )

@@ -44,6 +44,15 @@ def render_bar(
     )
 
 
+def render_dungeon_level(
+        console: Console, dungeon_level: int, location: tuple[int, int],
+) -> None:
+    """Render the level the player is currently on, at the given location."""
+    x, y = location
+
+    console.print(x=x, y=y, string=f"Dungeon level: {dungeon_level}")
+
+
 def render_names_at_mouse_location(
     console: Console, x: int, y: int, engine: Engine,
 ) -> None:

@@ -4,6 +4,8 @@ from typing import TYPE_CHECKING
 
 import color
 import exceptions
+from engine import Engine
+from entity import Entity
 
 if TYPE_CHECKING:
     from engine import Engine
@@ -63,6 +65,20 @@ class DropItem(ItemAction):
 class WaitAction(Action):
     def perform(self) -> None:
         pass
+
+
+class TakeStairsAction(Action):
+    def perform(self) -> None:
+        """Take the stairs, if any exist at the entity's location."""
+        if ((self.entity.x, self.entity.y)
+                == self.engine.game_map.downstairs_location):
+            self.engine.game_world.generate_floor()
+            self.engine.message_log.add_message(
+                "You descend the staircase.", color.descend,
+            )
+        else:
+            msg = "There are no stairs here."
+            raise exceptions.Impossible(msg)
 
 
 class ActionWithDirection(Action):

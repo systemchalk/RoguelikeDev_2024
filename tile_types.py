@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import numpy as np  # type: ignore
+import numpy as np
 
 # Tile graphics structure type compatible with Console.tiles_rgb
 graphic_dt = np.dtype(
@@ -47,4 +47,10 @@ wall = new_tile(
     transparent=False,
     dark=(ord(" "), (255, 255, 255), (0, 0, 100)),
     light=(ord(" "), (255, 255, 255), (130, 110, 50)),
+)
+down_stairs = new_tile(
+    walkable=True,
+    transparent=True,
+    dark=(ord(">"), (0, 0, 100), (50, 50, 150)),
+    light=(ord(">"), (255, 255, 255), (200, 180, 50)),
 )
