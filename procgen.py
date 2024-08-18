@@ -52,16 +52,6 @@ def get_max_value_for_floor(
 
     return current_value
 
-          item_chance = random.random()
-
-           if item_chance < 0.7:
-                entity_factories.health_potion.spawn(dungeon, x, y)
-            elif item_chance < 0.8:
-                entity_factories.fireball_scroll.spawn(dungeon, x, y)
-            elif item_chance < 0.9:
-                entity_factories.confusion_scroll.spawn(dungeon, x, y)
-            else:
-                entity_factories.lightning_scroll.spawn(dungeon, x, y)
 
 def get_entities_at_random(
         weighted_chances_by_floor: dict[int, list[tuple[Entity, int]]],

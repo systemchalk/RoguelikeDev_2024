@@ -132,7 +132,7 @@ class EventHandler(BaseEventHandler):
             if not self.engine.player.is_alive:
                 # The player was killed sometime during or after the action.
                 return GameOverEventHandler(self.engine)
-            elif self.engine.player.level.requires_level_up:
+            if self.engine.player.level.requires_level_up:
                 return LevelUpEventHandler(self.engine)
             # Return to the main handler.
             return MainGameEventHandler(self.engine)
@@ -337,8 +337,7 @@ class InventoryEventHandler(AskUserEventHandler):
 
         height = number_of_items_in_inventory + 2
 
-        if height <= 3:
-            height = 3
+        height = max(3, height)
 
         x = 40 if self.engine.player.x <= 30 else 0
 
