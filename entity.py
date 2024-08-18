@@ -9,6 +9,8 @@ from render_order import RenderOrder
 if TYPE_CHECKING:
     from components.ai import BaseAI
     from components.consumable import Consumable
+    from components.equipment import Equipment
+    from components.equippable import Equippable
     from components.fighter import Fighter
     from components.inventory import Inventory
     from components.level import Level
@@ -103,6 +105,7 @@ class Actor(Entity):
         color: tuple[int, int, int] = (255, 255, 255),
         name: str = "<Unnamed>",
         ai_cls: type[BaseAI],
+        equipment: Equipment,
         fighter: Fighter,
         inventory: Inventory,
         level: Level,
@@ -124,6 +127,9 @@ class Actor(Entity):
         )
 
         self.ai: BaseAI | None = ai_cls(self)
+
+        self.equipment: Equipment = equipment
+        self.equipment.parent = self
 
         self.fighter = fighter
         self.fighter.parent = self
@@ -149,7 +155,8 @@ class Item(Entity):
             char: str = "?",
             color: tuple[int, int, int] = (255, 255, 255),
             name: str = "<Unnamed>",
-            consumable: Consumable,
+            consumable: Consumable | None = None,
+            equippable: Equippable | None = None,
     ) -> None:
         """Initialize an item.
 
@@ -168,4 +175,11 @@ class Item(Entity):
         )
 
         self.consumable = consumable
-        self.consumable.parent = self
+
+        if self.consumable:
+            self.consumable.parent = self
+
+        self.equippable = equippable
+
+        if self.equippable:
+            self.equippable.parent = self
