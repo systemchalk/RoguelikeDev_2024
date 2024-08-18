@@ -11,6 +11,80 @@ from game_map import GameMap
 
 if TYPE_CHECKING:
     from engine import Engine
+    from entity import Entity
+
+max_items_by_floor = [
+    (1, 1),
+    (4, 2),
+]
+
+max_monsters_by_floor = [
+    (1, 2),
+    (4, 3),
+    (6, 5),
+]
+
+item_chances: dict[int, list[tuple[Entity, int]]] = {
+    0: [(entity_factories.health_potion, 35)],
+    2: [(entity_factories.confusion_scroll, 10)],
+    4: [(entity_factories.lightning_scroll, 25)],
+    6: [(entity_factories.fireball_scroll, 25)],
+}
+
+enemy_chances: dict[int, list[tuple[Entity, int]]] = {
+    0: [(entity_factories.orc, 80)],
+    3: [(entity_factories.troll, 15)],
+    5: [(entity_factories.troll, 30)],
+    7: [(entity_factories.troll, 60)],
+}
+
+
+def get_max_value_for_floor(
+        weighted_chances_by_floor: list[tuple[int, int]], floor: int,
+) -> int:
+    """Return the maximum number of entities for a given floor."""
+    current_value = 0
+
+    for floor_minimum, value in weighted_chances_by_floor:
+        if floor_minimum > floor:
+            break
+        current_value = value
+
+    return current_value
+
+          item_chance = random.random()
+
+           if item_chance < 0.7:
+                entity_factories.health_potion.spawn(dungeon, x, y)
+            elif item_chance < 0.8:
+                entity_factories.fireball_scroll.spawn(dungeon, x, y)
+            elif item_chance < 0.9:
+                entity_factories.confusion_scroll.spawn(dungeon, x, y)
+            else:
+                entity_factories.lightning_scroll.spawn(dungeon, x, y)
+
+def get_entities_at_random(
+        weighted_chances_by_floor: dict[int, list[tuple[Entity, int]]],
+        number_of_entities: int,
+        floor: int,
+) -> list[Entity]:
+    """Get number_of_entities randomly selected entities based on the floor."""
+    entity_weighted_chances = {}
+
+    for key, values in weighted_chances_by_floor.items():
+        if key > floor:
+            break
+        for value in values:
+            entity, weighted_chance = value
+
+            entity_weighted_chances[entity] = weighted_chance
+
+    entities = list(entity_weighted_chances.keys())
+    entity_weighted_chance_values = list(entity_weighted_chances.values())
+
+    return random.choices(
+        entities, weights=entity_weighted_chance_values, k=number_of_entities,
+    )
 
 
 class RectangularRoom:
@@ -48,39 +122,28 @@ class RectangularRoom:
 
 
 def place_entities(
-    room: RectangularRoom, dungeon: GameMap, maximum_monsters: int,
-    maximum_items: int,
+    room: RectangularRoom, dungeon: GameMap, floor_number: int,
 ) -> None:
-    number_of_monsters = random.randint(0, maximum_monsters)
-    number_of_items = random.randint(0, maximum_items)
+    number_of_monsters = random.randint(0, get_max_value_for_floor(
+        max_monsters_by_floor, floor_number))
+    number_of_items = random.randint(0, get_max_value_for_floor(
+        max_items_by_floor, floor_number))
 
-    for _ in range(number_of_monsters):
+    monsters: list[Entity] = get_entities_at_random(
+        enemy_chances, number_of_monsters, floor_number,
+    )
+
+    items: list[Entity] = get_entities_at_random(
+        item_chances, number_of_items, floor_number,
+    )
+
+    for entity in monsters + items:
         x = random.randint(room.x1 + 1, room.x2 - 1)
         y = random.randint(room.y1 + 1, room.y2 - 1)
 
         if not any(entity.x == x and entity.y == y
                    for entity in dungeon.entities):
-            if random.random() < 0.8:
-                entity_factories.orc.spawn(dungeon, x, y)
-            else:
-                entity_factories.troll.spawn(dungeon, x, y)
-
-    for _ in range(number_of_items):
-        x = random.randint(room.x1 + 1, room.x2 - 1)
-        y = random.randint(room.y1 + 1, room.y2 - 1)
-
-        if not any(entity.x == x and entity.y == y
-                   for entity in dungeon.entities):
-            item_chance = random.random()
-
-            if item_chance < 0.7:
-                entity_factories.health_potion.spawn(dungeon, x, y)
-            elif item_chance < 0.8:
-                entity_factories.fireball_scroll.spawn(dungeon, x, y)
-            elif item_chance < 0.9:
-                entity_factories.confusion_scroll.spawn(dungeon, x, y)
-            else:
-                entity_factories.lightning_scroll.spawn(dungeon, x, y)
+            entity.spawn(dungeon, x, y)
 
 
 def tunnel_between(
@@ -109,8 +172,6 @@ def generate_dungeon(  # noqa: PLR0913
     room_max_size: int,
     map_width: int,
     map_height: int,
-    max_monsters_per_room: int,
-    max_items_per_room: int,
     engine: Engine,
 ) -> GameMap:
     """Generate a new dungeon map."""
@@ -139,8 +200,7 @@ def generate_dungeon(  # noqa: PLR0913
         # Dig out this room's inner area.abs
         dungeon.tiles[new_room.inner] = tile_types.floor
 
-        place_entities(new_room, dungeon, max_monsters_per_room,
-                       max_items_per_room)
+        place_entities(new_room, dungeon, engine.game_world.current_floor)
 
         if len(rooms) == 0:
             # The first room, where the player starts.

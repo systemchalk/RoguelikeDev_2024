@@ -294,7 +294,7 @@ class LevelUpEventHandler(AskUserEventHandler):
         key = event.sym
         index = key - tcod.event.KeySym.a
 
-        if 1 <= index <= 2:
+        if 0 <= index <= 2:
             if index == 0:
                 player.level.increase_max_hp()
             elif index == 1:
