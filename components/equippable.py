@@ -1,3 +1,7 @@
+"""Equippables are the specific items that can be equipped.
+
+Behaviours for equippables are found in equipment.
+"""
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -10,6 +14,8 @@ if TYPE_CHECKING:
 
 
 class Equippable(BaseComponent):
+    """Equippables define specific equipment that can be equipped."""
+
     parent: Item
 
     def __init__(

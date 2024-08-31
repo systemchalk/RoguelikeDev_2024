@@ -1,3 +1,4 @@
+"""Functions to render the map and UI elements."""
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -12,6 +13,7 @@ if TYPE_CHECKING:
 
 
 def get_names_at_location(x: int, y: int, game_map: GameMap) -> str:
+    """Get the entity name at the given location."""
     if not game_map.in_bounds(x, y) or not game_map.visible[x, y]:
         return ""
 
@@ -28,6 +30,7 @@ def get_names_at_location(x: int, y: int, game_map: GameMap) -> str:
 def render_bar(
     console: Console, current_value: int, maximum_value: int, total_width: int,
 ) -> None:
+    """Visualize the amount of health remaining as a health bar and number."""
     bar_width = int(float(current_value) / maximum_value * total_width)
 
     console.draw_rect(x=0, y=45, width=total_width,
@@ -56,6 +59,7 @@ def render_dungeon_level(
 def render_names_at_mouse_location(
     console: Console, x: int, y: int, engine: Engine,
 ) -> None:
+    """Render the entity names for the selected location."""
     mouse_x, mouse_y = engine.mouse_location
 
     names_at_mouse_location = get_names_at_location(

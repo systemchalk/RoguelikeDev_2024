@@ -1,3 +1,4 @@
+"""Game Map containing all the entities and traversable titles."""
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Iterable, Iterator
@@ -15,6 +16,8 @@ if TYPE_CHECKING:
 
 
 class GameMap:
+    """GameMap of a given size containing entities."""
+
     def __init__(
         self, engine: Engine, width: int, height: int,
         entities: Iterable[Entity] = (),
@@ -41,6 +44,7 @@ class GameMap:
 
     @property
     def gamemap(self) -> GameMap:
+        """Return the GameMap."""
         return self
 
     @property
@@ -54,6 +58,7 @@ class GameMap:
 
     @property
     def items(self) -> Iterator[Item]:
+        """Yield each of the items on the map."""
         yield from (entity
                     for entity
                     in self.entities
@@ -63,6 +68,7 @@ class GameMap:
     def get_blocking_entity_at_location(
         self, location_x: int, location_y: int,
     ) -> Entity | None:
+        """Find the entity that is in the way at a given location."""
         for entity in self.entities:
             if (
                 entity.blocks_movement
@@ -74,6 +80,7 @@ class GameMap:
         return None
 
     def get_actor_at_location(self, x: int, y: int) -> Actor | None:
+        """Get the actor at a given location."""
         for actor in self.actors:
             if actor.x == x and actor.y == y:
                 return actor

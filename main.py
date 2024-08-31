@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+"""Main module to start the game."""
+
 import traceback
 
 import tcod
@@ -13,10 +15,10 @@ def save_game(handler: input_handlers.BaseEventHandler, filename: str) -> None:
     """If the current event handler has an active Engine then save it."""
     if isinstance(handler, input_handlers.EventHandler):
         handler.engine.save_as(filename)
-        print("Game saved.")
 
 
 def main() -> None:
+    """Set up and run the game until given a quit exception."""
     screen_width = 80
     screen_height = 50
 
@@ -45,7 +47,7 @@ def main() -> None:
                     for event in tcod.event.wait():
                         context.convert_event(event)
                         handler = handler.handle_events(event)
-                except Exception:  # Handle exceptions in game.
+                except Exception:  # Handle exceptions in game.  # noqa: BLE001
                     traceback.print_exc()
                     # Then print the error to the message log.
                     if isinstance(handler, input_handlers.EventHandler):

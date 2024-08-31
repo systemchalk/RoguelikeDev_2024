@@ -1,3 +1,5 @@
+"""Level establishes XP and level up system."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -9,6 +11,8 @@ if TYPE_CHECKING:
 
 
 class Level(BaseComponent):
+    """Level tracks XP, behaviour for level up, and leveling system."""
+
     parent: Actor
 
     def __init__(

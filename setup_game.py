@@ -68,8 +68,8 @@ def new_game() -> Engine:
 def load_game(filename: str) -> Engine:
     """Load an Engine instance from a file."""
     with Path(filename).open("rb") as f:
-        engine = pickle.loads(lzma.decompress(f.read()))
-    assert isinstance(engine, Engine)
+        engine = pickle.loads(lzma.decompress(f.read()))  # noqa: S301
+    assert isinstance(engine, Engine)  # noqa: S101
     return engine
 
 
@@ -112,6 +112,7 @@ class MainMenu(input_handlers.BaseEventHandler):
     def ev_keydown(
             self, event: tcod.event.KeyDown,
     ) -> input_handlers.BaseEventHandler | None:
+        """Handle player input on the start screen."""
         if event.sym in (tcod.event.KeySym.q, tcod.event.KeySym.ESCAPE):
             raise SystemExit
         if event.sym == tcod.event.KeySym.c:
@@ -122,7 +123,7 @@ class MainMenu(input_handlers.BaseEventHandler):
             except FileNotFoundError:
                 return input_handlers.PopupMessage(self,
                                                    "No saved game to load.")
-            except Exception as exc:
+            except Exception as exc:  # noqa: BLE001
                 traceback.print_exc()  # Print to stderr.
                 return input_handlers.PopupMessage(self,
                                                    f"Failed to load save:\n{

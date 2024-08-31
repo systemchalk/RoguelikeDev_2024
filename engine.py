@@ -1,3 +1,4 @@
+"""Engine keeps track of the state of the game."""
 from __future__ import annotations
 
 import contextlib
@@ -20,6 +21,8 @@ if TYPE_CHECKING:
 
 
 class Engine:
+    """Engine keeps track of the map, world, and all entities within."""
+
     game_map: GameMap
     game_world: GameWorld
 
@@ -34,6 +37,7 @@ class Engine:
         self.player = player
 
     def handle_enemy_turns(self) -> None:
+        """Each entity that isn't a player takes an action."""
         for entity in set(self.game_map.actors) - {self.player}:
             if entity.ai:
                 with contextlib.suppress(exceptions.Impossible):
@@ -51,6 +55,7 @@ class Engine:
         self.game_map.explored |= self.game_map.visible
 
     def render(self, console: Console) -> None:
+        """Translate game data into visual on the screen."""
         self.game_map.render(console)
 
         self.message_log.render(console=console, x=21,

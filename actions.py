@@ -1,3 +1,4 @@
+"""Actions define what entities can do in the game."""
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -13,6 +14,8 @@ if TYPE_CHECKING:
 
 
 class Action:
+    """Base class for actions. Behaviour depends on specific action."""
+
     def __init__(self, entity: Actor) -> None:
         """Prepare an action with an entity."""
         super().__init__()
@@ -36,6 +39,8 @@ class Action:
 
 
 class ItemAction(Action):
+    """Actions for items."""
+
     def __init__(
             self, entity: Actor, item: Item,
             target_xy: tuple[int, int] | None = None,
@@ -59,7 +64,10 @@ class ItemAction(Action):
 
 
 class DropItem(ItemAction):
+    """Drop an item."""
+
     def perform(self) -> None:
+        """Remove an item if equipped, and drop it to the ground."""
         if self.entity.equipment.item_is_equipped(self.item):
             self.entity.equipment.toggle_equip(self.item)
 
@@ -67,21 +75,30 @@ class DropItem(ItemAction):
 
 
 class EquipAction(Action):
+    """Equip/unequip an item, the opposite of its current status."""
+
     def __init__(self, entity: Actor, item: Item) -> None:
+        """Initialize EquipAction with the item and entity."""
         super().__init__(entity)
 
         self.item = item
 
     def perform(self) -> None:
+        """Equip or unequip the item."""
         self.entity.equipment.toggle_equip(self.item)
 
 
 class WaitAction(Action):
+    """Not doing anything still takes a turn."""
+
     def perform(self) -> None:
-        pass
+        """Pass the turn."""
+        pass  # noqa: PIE790
 
 
 class TakeStairsAction(Action):
+    """An action to change levels."""
+
     def perform(self) -> None:
         """Take the stairs, if any exist at the entity's location."""
         if ((self.entity.x, self.entity.y)
@@ -96,6 +113,8 @@ class TakeStairsAction(Action):
 
 
 class ActionWithDirection(Action):
+    """A base class for actions that need to be performed in a direction."""
+
     def __init__(self, entity: Actor, dx: int, dy: int) -> None:
         """Initialize an ActionWithDirection with dx, dy values."""
         super().__init__(entity)
@@ -120,11 +139,15 @@ class ActionWithDirection(Action):
         return self.engine.game_map.get_actor_at_location(*self.dest_xy)
 
     def perform(self) -> None:
+        """Results depend on individual action."""
         raise NotImplementedError
 
 
 class MeleeAction(ActionWithDirection):
+    """Attack targets adjacent to entity."""
+
     def perform(self) -> None:
+        """Damage target if it's valid."""
         target = self.target_actor
         if not target:
             msg = "Nothing to attack"
@@ -150,7 +173,10 @@ class MeleeAction(ActionWithDirection):
 
 
 class MovementAction(ActionWithDirection):
+    """Move or warn about impossible actions."""
+
     def perform(self) -> None:
+        """Move to destination if not blocked."""
         dest_x, dest_y = self.dest_xy
         blocked_message = "That way is blocked."
 
@@ -169,7 +195,10 @@ class MovementAction(ActionWithDirection):
 
 
 class BumpAction(ActionWithDirection):
+    """Move in the direction or attack obstructing entities."""
+
     def perform(self) -> None:
+        """Check if an entity is the way and attack, otherwise move."""
         if self.target_actor:
             return MeleeAction(self.entity, self.dx, self.dy).perform()
         return MovementAction(self.entity, self.dx, self.dy).perform()
@@ -183,6 +212,7 @@ class PickupAction(Action):
         super().__init__(entity)
 
     def perform(self) -> None:
+        """Add an item to the inventory or warn that inventory is full."""
         actor_location_x = self.entity.x
         actor_location_y = self.entity.y
         inventory = self.entity.inventory

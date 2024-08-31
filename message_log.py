@@ -1,3 +1,4 @@
+"""Log of actions and events in game."""
 from __future__ import annotations
 
 import textwrap
@@ -10,6 +11,8 @@ if TYPE_CHECKING:
 
 
 class Message:
+    """Messages are text, colours, and number of occurances."""
+
     def __init__(self, text: str, fg: tuple[int, int, int]) -> None:
         """Intialize a message with text, a foreground colour, and count=1."""
         self.plain_text = text
@@ -25,6 +28,8 @@ class Message:
 
 
 class MessageLog:
+    """MessageLog collects messages and renders them."""
+
     def __init__(self) -> None:
         """Prepare a MessageLog with an empty list of messages."""
         self.messages: list[Message] = []

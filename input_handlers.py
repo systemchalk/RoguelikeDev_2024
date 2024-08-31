@@ -1,3 +1,4 @@
+"""Handle input from the player."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -61,6 +62,8 @@ CONFIRM_KEYS = {
     tcod.event.KeySym.KP_ENTER,
 }
 
+X_WIN_LIMIT = 30  # Cutoff for x position for window placement.
+
 ActionOrHandler = Union[Action, "BaseEventHandler"]
 """An event handler return value that can trigger an action or switch handlers.
 
@@ -71,19 +74,23 @@ MainGameEventHandler will become the active handler.
 
 
 class BaseEventHandler(tcod.event.EventDispatch[ActionOrHandler]):
+    """Base class to handle a given event."""
+
     def handle_events(self, event: tcod.event.Event) -> BaseEventHandler:
         """Handle an event and return the next active event handler."""
         state = self.dispatch(event)
         if isinstance(state, BaseEventHandler):
             return state
         assert not isinstance(state, Action), f"{
-            self!r} can not handle actions."
+            self!r} can not handle actions."  # noqa: S101
         return self
 
     def on_render(self, console: tcod.Console) -> None:
+        """Anything done on_render depends on the specific event."""
         raise NotImplementedError
 
-    def ev_quit(self, event: tcod.event.Quit) -> Action | None:
+    def ev_quit(self, event: tcod.event.Quit) -> Action | None:  # noqa: ARG002
+        """Quit the game."""
         raise SystemExit
 
 
@@ -110,7 +117,7 @@ class PopupMessage(BaseEventHandler):
             alignment=libtcodpy.CENTER,
         )
 
-    def ev_keydown(self, event:
+    def ev_keydown(self, event:  # noqa: ARG002
                    tcod.event.KeyDown,
                    ) -> BaseEventHandler | None:
         """Any key returns to the parent handler."""
@@ -118,6 +125,8 @@ class PopupMessage(BaseEventHandler):
 
 
 class EventHandler(BaseEventHandler):
+    """Handle specific evnets with input handlers and an engine."""
+
     def __init__(self, engine: Engine) -> None:
         """Initialize EventHandler with an engine."""
         self.engine = engine
@@ -158,10 +167,12 @@ class EventHandler(BaseEventHandler):
         return True
 
     def ev_mousemotion(self, event: tcod.event.MouseMotion) -> None:
+        """Handle mouse inputs."""
         if self.engine.game_map.in_bounds(event.tile.x, event.tile.y):
             self.engine.mouse_location = event.tile.x, event.tile.y
 
     def on_render(self, console: tcod.Console) -> None:
+        """Render to console."""
         self.engine.render(console)
 
 
@@ -184,7 +195,7 @@ class AskUserEventHandler(EventHandler):
         return self.on_exit()
 
     def ev_mousebuttondown(self,
-                           event: tcod.event.MouseButtonDown,
+                           event: tcod.event.MouseButtonDown,  # noqa: ARG002
                            ) -> ActionOrHandler | None:
         """By default any mouse click exits this input handler."""
         return self.on_exit()
@@ -198,13 +209,15 @@ class AskUserEventHandler(EventHandler):
 
 
 class CharacterScreenEventHandler(AskUserEventHandler):
+    """Handle character screen events."""
+
     TITLE = "Character Information"
 
     def on_render(self, console: tcod.Console) -> None:
         """Render the character information."""
         super().on_render(console)
 
-        x = 40 if self.engine.player.x <= 30 else 0
+        x = 40 if self.engine.player.x <= X_WIN_LIMIT else 0
 
         y = 0
 
@@ -247,13 +260,15 @@ class CharacterScreenEventHandler(AskUserEventHandler):
 
 
 class LevelUpEventHandler(AskUserEventHandler):
+    """Handle a LevelUp."""
+
     TITLE = "Level Up"
 
     def on_render(self, console: tcod.Console) -> None:
         """Render the level up screen."""
         super().on_render(console)
 
-        x = 40 if self.engine.player.x <= 30 else 0
+        x = 40 if self.engine.player.x <= X_WIN_LIMIT else 0
 
         console.draw_frame(
             x=x,
@@ -294,7 +309,7 @@ class LevelUpEventHandler(AskUserEventHandler):
         key = event.sym
         index = key - tcod.event.KeySym.a
 
-        if 0 <= index <= 2:
+        if 0 <= index <= 2:  # noqa: PLR2004
             if index == 0:
                 player.level.increase_max_hp()
             elif index == 1:
@@ -310,7 +325,7 @@ class LevelUpEventHandler(AskUserEventHandler):
         return super().ev_keydown(event)
 
     def ev_mousebuttondown(
-            self, event: tcod.event.MouseButtonDown,
+            self, event: tcod.event.MouseButtonDown,  # noqa: ARG002
     ) -> ActionOrHandler | None:
         """Don't allow the player to click to exit the menu, like normal."""
         return None
@@ -339,7 +354,7 @@ class InventoryEventHandler(AskUserEventHandler):
 
         height = max(3, height)
 
-        x = 40 if self.engine.player.x <= 30 else 0
+        x = 40 if self.engine.player.x <= X_WIN_LIMIT else 0
 
         y = 0
 
@@ -375,11 +390,12 @@ class InventoryEventHandler(AskUserEventHandler):
     def ev_keydown(self,
                    event: tcod.event.KeyDown,
                    ) -> ActionOrHandler | None:
+        """Use an item in the inventory."""
         player = self.engine.player
         key = event.sym
         index = key - tcod.event.KeySym.a
 
-        if 0 <= index <= 26:
+        if 0 <= index <= 26:  # noqa: PLR2004
             try:
                 selected_item = player.inventory.items[index]
             except IndexError:
@@ -400,6 +416,7 @@ class InventoryActivateHandler(InventoryEventHandler):
     TITLE = "Select an item to use"
 
     def on_item_selected(self, item: Item) -> ActionOrHandler | None:
+        """Perform the action associated with the selected item."""
         if item.consumable:
             # Return the action for the selected item.
             return item.consumable.get_action(self.engine.player)
@@ -438,6 +455,7 @@ class SelectIndexHandler(AskUserEventHandler):
     def ev_keydown(self,
                    event: tcod.event.KeyDown,
                    ) -> ActionOrHandler | None:
+        """Move selector in response to key combinations."""
         key = event.sym
         if key in MOVE_KEYS:
             modifier = 1  # Holding modifier keys will speed up key movement.
@@ -477,7 +495,7 @@ class SelectIndexHandler(AskUserEventHandler):
 class LookHandler(SelectIndexHandler):
     """Lets the player look around using the keyboard."""
 
-    def on_index_selected(self, x: int, y: int) -> MainGameEventHandler:
+    def on_index_selected(self, x: int, y: int) -> MainGameEventHandler:  # noqa: ARG002
         """Return to main handler."""
         return MainGameEventHandler(self.engine)
 
@@ -495,6 +513,7 @@ class SingleRangedAttackHandler(SelectIndexHandler):
         self.callback = callback
 
     def on_index_selected(self, x: int, y: int) -> Action | None:
+        """Perform attack on the selected entity."""
         return self.callback((x, y))
 
 
@@ -534,13 +553,17 @@ class AreaRangedAttackHandler(SelectIndexHandler):
         )
 
     def on_index_selected(self, x: int, y: int) -> Action | None:
+        """Perform the attack on the selected area."""
         return self.callback((x, y))
 
 
 class MainGameEventHandler(EventHandler):
+    """Input handling for the main game screen."""
+
     def ev_keydown(self,  # noqa: C901, PLR0911
                    event: tcod.event.KeyDown,
                    ) -> ActionOrHandler | None:
+        """Move the player or choose a new mode to move into."""
         action: Action | None = None
 
         key = event.sym
@@ -578,16 +601,20 @@ class MainGameEventHandler(EventHandler):
 
 
 class GameOverEventHandler(EventHandler):
+    """Handle a game over and exit."""
+
     def on_quit(self) -> None:
         """Handle exiting out of a finished game."""
         if Path("savegame.sav").exists():
             Path("savegame.sav").unlink()  # Deletes the active save file.
         raise exceptions.QuitWithoutSaving  # Avoid saving a finished game.
 
-    def ev_quit(self, event: tcod.event.Quit) -> None:
+    def ev_quit(self, event: tcod.event.Quit) -> None:  # noqa: ARG002
+        """Quit the game."""
         self.on_quit()
 
     def ev_keydown(self, event: tcod.event.KeyDown) -> Action | None:
+        """Quit if the player hits escape."""
         if event.sym == tcod.event.KeySym.ESCAPE:
             self.on_quit()
 
@@ -614,6 +641,7 @@ class HistoryViewer(EventHandler):
         self.cursor = self.log_length - 1
 
     def on_render(self, console: tcod.Console) -> None:
+        """Render the game history to the console."""
         super().on_render(console)  # Draw the main state as the background.
 
         log_console = tcod.console.Console(
@@ -640,6 +668,7 @@ class HistoryViewer(EventHandler):
     def ev_keydown(self,
                    event: tcod.event.KeyDown,
                    ) -> MainGameEventHandler | None:
+        """Scroll through the game history or exit history."""
         # Fancy conditional movement to make it feel right.abs
         if event.sym in CURSOR_Y_KEYS:
             adjust = CURSOR_Y_KEYS[event.sym]

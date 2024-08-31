@@ -1,3 +1,7 @@
+"""Entities that can appear in the game.
+
+Behaviours are defined in entity.py
+"""
 from components import consumable, equippable
 from components.ai import HostileEnemy
 from components.equipment import Equipment

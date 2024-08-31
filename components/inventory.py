@@ -1,3 +1,4 @@
+"""Inventory stores any items picked up."""
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -9,6 +10,8 @@ if TYPE_CHECKING:
 
 
 class Inventory(BaseComponent):
+    """Inventory adds capacity for items and ability to drop them."""
+
     parent: Actor
 
     def __init__(self, capacity: int) -> None:

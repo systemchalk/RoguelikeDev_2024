@@ -1,3 +1,5 @@
+"""Procedural generation of dungeons."""
+
 from __future__ import annotations
 
 import random
@@ -74,12 +76,14 @@ def get_entities_at_random(
     entities = list(entity_weighted_chances.keys())
     entity_weighted_chance_values = list(entity_weighted_chances.values())
 
-    return random.choices(
+    return random.choices(  # noqa: S311
         entities, weights=entity_weighted_chance_values, k=number_of_entities,
     )
 
 
 class RectangularRoom:
+    """Generic room and helpers to define size and intersection."""
+
     def __init__(self, x: int, y: int, width: int, height: int) -> None:
         """Initialize a rectangular room.
 
@@ -93,6 +97,7 @@ class RectangularRoom:
 
     @property
     def center(self) -> tuple[int, int]:
+        """Return the x and y coordinates of the center of the room."""
         center_x = int((self.x1 + self.x2) / 2)
         center_y = int((self.y1 + self.y2) / 2)
 
@@ -116,9 +121,10 @@ class RectangularRoom:
 def place_entities(
     room: RectangularRoom, dungeon: GameMap, floor_number: int,
 ) -> None:
-    number_of_monsters = random.randint(0, get_max_value_for_floor(
+    """Randomly select a number of entities and place them in the room."""
+    number_of_monsters = random.randint(0, get_max_value_for_floor(  # noqa: S311
         max_monsters_by_floor, floor_number))
-    number_of_items = random.randint(0, get_max_value_for_floor(
+    number_of_items = random.randint(0, get_max_value_for_floor(  # noqa: S311
         max_items_by_floor, floor_number))
 
     monsters: list[Entity] = get_entities_at_random(
@@ -130,8 +136,8 @@ def place_entities(
     )
 
     for entity in monsters + items:
-        x = random.randint(room.x1 + 1, room.x2 - 1)
-        y = random.randint(room.y1 + 1, room.y2 - 1)
+        x = random.randint(room.x1 + 1, room.x2 - 1)  # noqa: S311
+        y = random.randint(room.y1 + 1, room.y2 - 1)  # noqa: S311
 
         if not any(entity.x == x and entity.y == y
                    for entity in dungeon.entities):
@@ -144,7 +150,7 @@ def tunnel_between(
     """Return an L-shaped tunnel between these two points."""
     x1, y1 = start
     x2, y2 = end
-    if random.random() < 0.5:  # 50% chance
+    if random.random() < 0.5:  # 50% chance  # noqa: PLR2004, S311
         # Move horizontally, then vertically
         corner_x, corner_y = x2, y1
     else:
@@ -175,11 +181,11 @@ def generate_dungeon(  # noqa: PLR0913
     center_of_last_room = (0, 0)
 
     for _ in range(max_rooms):
-        room_width = random.randint(room_min_size, room_max_size)
-        room_height = random.randint(room_min_size, room_max_size)
+        room_width = random.randint(room_min_size, room_max_size)  # noqa: S311
+        room_height = random.randint(room_min_size, room_max_size)  # noqa: S311
 
-        x = random.randint(0, dungeon.width - room_width - 1)
-        y = random.randint(0, dungeon.height - room_height - 1)
+        x = random.randint(0, dungeon.width - room_width - 1)  # noqa: S311
+        y = random.randint(0, dungeon.height - room_height - 1)  # noqa: S311
 
         # "RectangularRoom" class makes rectangles easier to work with
         new_room = RectangularRoom(x, y, room_width, room_height)

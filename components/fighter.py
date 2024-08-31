@@ -1,3 +1,4 @@
+"""Fighters are entities that can attack or be attacked."""
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -11,6 +12,8 @@ if TYPE_CHECKING:
 
 
 class Fighter(BaseComponent):
+    """Fighters have health, attack, and defence and can take/give damage."""
+
     parent: Actor
 
     def __init__(self, hp: int, base_defense: int, base_power: int) -> None:
@@ -22,6 +25,7 @@ class Fighter(BaseComponent):
 
     @property
     def hp(self) -> int:
+        """Get current hp."""
         return self._hp
 
     @hp.setter
@@ -32,25 +36,33 @@ class Fighter(BaseComponent):
 
     @property
     def defense(self) -> int:
+        """Get current defence after bonuses."""
         return self.base_defense + self.defense_bonus
 
     @property
     def power(self) -> int:
+        """Get current attack power after bonuses."""
         return self.base_power + self.power_bonus
 
     @property
     def defense_bonus(self) -> int:
+        """Get defence bonuses from any equipment."""
         if self.parent.equipment:
             return self.parent.equipment.defense_bonus
         return 0
 
     @property
     def power_bonus(self) -> int:
+        """Get attack power bonuses from any equipment."""
         if self.parent.equipment:
             return self.parent.equipment.power_bonus
         return 0
 
     def die(self) -> None:
+        """Kill an entity if its health is 0.
+
+        Death includes changing its representation and AI.
+        """
         if self.engine.player is self.parent:
             death_message = "You died!"
             death_message_color = color.player_die
@@ -70,6 +82,7 @@ class Fighter(BaseComponent):
         self.engine.player.level.add_xp(self.parent.level.xp_given)
 
     def heal(self, amount: int) -> int:
+        """Heal HP by given amount up to max."""
         if self.hp == self.max_hp:
             return 0
 
@@ -84,4 +97,5 @@ class Fighter(BaseComponent):
         return amount_recovered
 
     def take_damage(self, amount: int) -> None:
+        """Reduce hp by given amount."""
         self.hp -= amount

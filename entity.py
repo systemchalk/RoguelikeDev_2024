@@ -1,3 +1,7 @@
+"""Logic of interactable entities.
+
+Actual entities are found in entity_factories.py
+"""
 from __future__ import annotations
 
 import copy
@@ -56,6 +60,7 @@ class Entity:
 
     @property
     def gamemap(self) -> GameMap:
+        """Get the map this entity is attached to."""
         return self.parent.gamemap
 
     def spawn(self: T, gamemap: GameMap, x: int, y: int) -> T:
@@ -90,12 +95,14 @@ class Entity:
         return math.sqrt((x - self.x) ** 2 + (y - self.y) ** 2)
 
     def move(self, dx: int, dy: int) -> None:
-        # Move the entity by a given amount
+        """Move the entity by a given amount."""
         self.x += dx
         self.y += dy
 
 
 class Actor(Entity):
+    """Actors are entities that can move and attack."""
+
     def __init__(  # noqa: PLR0913
         self,
         *,
@@ -147,6 +154,8 @@ class Actor(Entity):
 
 
 class Item(Entity):
+    """Items are entities that can be picked up and used."""
+
     def __init__(  # noqa: PLR0913
             self,
             *,

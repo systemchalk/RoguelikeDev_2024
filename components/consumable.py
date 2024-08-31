@@ -1,3 +1,4 @@
+"""Consumable items."""
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -19,6 +20,8 @@ if TYPE_CHECKING:
 
 
 class Consumable(BaseComponent):
+    """Consumables perform actions and then are destroyed."""
+
     parent: Item
 
     def get_action(self, consumer: Actor) -> ActionOrHandler | None:
@@ -41,11 +44,14 @@ class Consumable(BaseComponent):
 
 
 class ConfusionConsumable(Consumable):
+    """ConfusionConsumables apply confusion to targets."""
+
     def __init__(self, number_of_turns: int) -> None:
         """Initialize a ConfusionConsumable with a number of turns."""
         self.number_of_turns = number_of_turns
 
     def get_action(self, consumer: Actor) -> ActionOrHandler | None:
+        """Prompt the player for a target to confuse."""
         self.engine.message_log.add_message(
             "Select a target location.", color.needs_target,
         )
@@ -55,6 +61,7 @@ class ConfusionConsumable(Consumable):
         )
 
     def activate(self, action: actions.ItemAction) -> None:
+        """Check if the target is valid and confuse it."""
         consumer = action.entity
         target = action.target_actor
 
@@ -81,11 +88,14 @@ class ConfusionConsumable(Consumable):
 
 
 class HealingConsumable(Consumable):
+    """HealingConsumables heal the owner and are destroyed."""
+
     def __init__(self, amount: int) -> None:
         """Prepare a HealingConsumable with amount of HP restored."""
         self.amount = amount
 
     def activate(self, action: actions.ItemAction) -> None:
+        """Check if the consumer is wounded and heal."""
         consumer = action.entity
         amount_recovered = consumer.fighter.heal(self.amount)
 
@@ -102,12 +112,15 @@ class HealingConsumable(Consumable):
 
 
 class FireballDamageConsumable(Consumable):
+    """Fireballs deal targeted area of effect damage before being destroyed."""
+
     def __init__(self, damage: int, radius: int) -> None:
         """Prepare a FireballDamageConsumable with damage and radius."""
         self.damage = damage
         self.radius = radius
 
     def get_action(self, consumer: Actor) -> AreaRangedAttackHandler:
+        """Prompt the player for the target."""
         self.engine.message_log.add_message(
             "Select a target location.", color.needs_target,
         )
@@ -118,6 +131,7 @@ class FireballDamageConsumable(Consumable):
         )
 
     def activate(self, action: actions.ItemAction) -> None:
+        """Check if the target is valid and apply damage."""
         target_xy = action.target_xy
 
         if not self.engine.game_map.visible[target_xy]:
@@ -142,12 +156,15 @@ class FireballDamageConsumable(Consumable):
 
 
 class LightningDamageConsumable(Consumable):
+    """LightnightDamageConsumable deals direct damage, ignoring armour."""
+
     def __init__(self, damage: int, maximum_range: int) -> None:
-        """Prepare a LIghtningDamageConsumable with damage and max range."""
+        """Prepare a LightningDamageConsumable with damage and max range."""
         self.damage = damage
         self.maximum_range = maximum_range
 
     def activate(self, action: actions.ItemAction) -> None:
+        """Damage the closest enemy or warn if none are available."""
         consumer = action.entity
         target = None
         closest_distance = self.maximum_range + 1.0

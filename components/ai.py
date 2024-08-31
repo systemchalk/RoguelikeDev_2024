@@ -1,3 +1,4 @@
+"""AI classes to establish actor behaviour."""
 from __future__ import annotations
 
 import random
@@ -13,9 +14,12 @@ if TYPE_CHECKING:
 
 
 class BaseAI(Action):
+    """Base AI class to specific types to inherit from."""
+
     entity: Actor
 
     def perform(self) -> None:
+        """Perform should be defined by specific AI type."""
         raise NotImplementedError
 
     def get_path_to(self, dest_x: int, dest_y: int) -> list[tuple[int, int]]:
@@ -74,6 +78,7 @@ class ConfusedEnemy(BaseAI):
         self.turns_remaining = turns_remaining
 
     def perform(self) -> None:
+        """Move randomly or restore old AI if the spell has worn off."""
         # Revert the AI back to its state if the effect has run its course
         if self.turns_remaining <= 0:
             self.engine.message_log.add_message(
@@ -83,7 +88,7 @@ class ConfusedEnemy(BaseAI):
             return None
 
         # Pick a random direction
-        direction_x, direction_y = random.choice(
+        direction_x, direction_y = random.choice(  # noqa: S311
             [
                 (-1, -1),  # Northwest
                 (0, -1),  # North
@@ -105,12 +110,15 @@ class ConfusedEnemy(BaseAI):
 
 
 class HostileEnemy(BaseAI):
+    """Standard enemies that chase after the player after detection."""
+
     def __init__(self, entity: Actor) -> None:
         """Initialize a HostileEnemy with an entity and an empty path."""
         super().__init__(entity)
         self.path: list[tuple[int, int]] = []
 
     def perform(self) -> None:
+        """Attack the player or chase down the detected player if too far."""
         target = self.engine.player
         dx = target.x - self.entity.x
         dy = target.y - self.entity.y
